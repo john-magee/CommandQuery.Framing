@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CommandQuery.Framing
 {
-    public class Response
+    public static class Response
     {
         public static CommandResponse<T> Failed<T>(List<string> errorMessages, Exception exception = null)
         {
