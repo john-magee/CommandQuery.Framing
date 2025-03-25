@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommandQuery.Framing
 {
-
     internal class Scanner
     {
-        private readonly List<Assembly> _asm = new List<Assembly>();
-        private readonly List<Type> _doNotInclude = new List<Type>();
+        private readonly List<Assembly> _asm = [];
+        private readonly List<Type> _doNotInclude = [];
 
         public Scanner ScanAssemblyWithType<T>()
         {
@@ -25,24 +24,25 @@ namespace CommandQuery.Framing
 
             return this;
         }
+
         public void Scan(IServiceCollection serviceCollection)
         {
             new AssemblyConventionScanner()
                 .Assemblies(_asm.ToArray())
                 .Do(foundInterface =>
+                {
+                    var implInterface = foundInterface.GetTypeInfo().ImplementedInterfaces.ToList();
+
+                    implInterface.Add(foundInterface);
+
+                    if (_doNotInclude.Count != 0 && !implInterface.Any(x => _doNotInclude.Any(i => i == x)))
                     {
-                        var implInterface = foundInterface.GetTypeInfo().ImplementedInterfaces.ToList();
-                        implInterface.Add(foundInterface);
-
-                        if (_doNotInclude.Any() && !implInterface.Any(x => _doNotInclude.Any(i => i == x)))
+                        foreach (var type in implInterface)
                         {
-                            foreach (var type in implInterface)
-                            {
-                                serviceCollection.AddTransient(type, foundInterface);
-                            }
-
+                            serviceCollection.AddTransient(type, foundInterface);
                         }
-                    })
+                    }
+                })
                 .Execute();
         }
     }

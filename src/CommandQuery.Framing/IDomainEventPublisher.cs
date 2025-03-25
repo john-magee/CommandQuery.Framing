@@ -7,6 +7,7 @@ namespace CommandQuery.Framing
     {
         event EventHandler MessageSent;
         event EventHandler<DomainEventArgs> MessageResult;
+
         Task Publish<TMessageType>(TMessageType message);
     }
 }

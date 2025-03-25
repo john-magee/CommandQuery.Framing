@@ -16,14 +16,13 @@ namespace CommandTests.Configuration
             _sorted.Add(3, "AndWhen");
             _sorted.Add(4, "Then");
             _sorted.Add(5, "AndThen");
-
         }
+
         /// <inheritdoc/>
         public int Compare(MemberInfo first, MemberInfo second)
         {
             var a = _sorted.FirstOrDefault(x => first.Name.StartsWith(x.Value)).Key;
             var b = _sorted.FirstOrDefault(x => second.Name.StartsWith(x.Value)).Key;
-
 
             if (a < b)
             {

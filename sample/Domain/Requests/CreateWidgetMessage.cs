@@ -2,8 +2,8 @@
 
 namespace CommandQueryApiSample.Domain.Requests
 {
-    public class CreateWidgetMessage:IMessage
+    public class CreateWidgetMessage
+        : IMessage
     {
-        
     }
 }

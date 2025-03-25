@@ -1,52 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <PackageId>CommandQuery.Framing</PackageId>
-    <Version>1.0.8</Version>
-    <Authors>Thomas LaZelle</Authors>
-    <Product>CommandQuery.Framing</Product>
-    <Description>Command Query Seperation Framework</Description>
-    <PackageProjectUrl>https://github.com/tomlazelle/CommandQuery.Framing</PackageProjectUrl>
-    <Copyright>2018</Copyright>
-    <RepositoryUrl>https://github.com/tomlazelle/CommandQuery.Framing</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>Command Query Segregation Seperation</PackageTags>
-    <NeutralLanguage></NeutralLanguage>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Title>CommandQuery.Framing</Title>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-  </ItemGroup>
-
-  <Target Name="SetNuspecProperties" BeforeTargets="GenerateNuspec">
     <PropertyGroup>
-      <NuspecProperties>$(NuspecProperties);id=$(AssemblyName)</NuspecProperties>
-      <NuspecProperties>$(NuspecProperties);title=$(AssemblyName)</NuspecProperties>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageId>CommandQuery.Framing</PackageId>
+        <Version>1.0.8</Version>
+        <Authors>Thomas LaZelle</Authors>
+        <Product>CommandQuery.Framing</Product>
+        <Description>Command Query Seperation Framework</Description>
+        <PackageProjectUrl>https://github.com/tomlazelle/CommandQuery.Framing</PackageProjectUrl>
+        <Copyright>2018</Copyright>
+        <RepositoryUrl>https://github.com/tomlazelle/CommandQuery.Framing</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Command Query Segregation Seperation</PackageTags>
+        <NeutralLanguage></NeutralLanguage>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Title>CommandQuery.Framing</Title>
     </PropertyGroup>
-    <Message Importance="high" Text="NuspecProperties: $(NuspecProperties)" />
-  </Target>
+
+    <ItemGroup>
+        <None Include="..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    </ItemGroup>
+
+    <Target Name="SetNuspecProperties" BeforeTargets="GenerateNuspec">
+        <PropertyGroup>
+            <NuspecProperties>$(NuspecProperties);id=$(AssemblyName)</NuspecProperties>
+            <NuspecProperties>$(NuspecProperties);title=$(AssemblyName)</NuspecProperties>
+        </PropertyGroup>
+        <Message Importance="high" Text="NuspecProperties: $(NuspecProperties)" />
+    </Target>
+    
 </Project>

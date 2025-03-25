@@ -10,9 +10,10 @@ namespace CommandTests.HandlerTests
         public async Task can_get_a_handler()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddCommandQuery(typeof(CanGetAHandlerTest).Assembly);
-            var provider = serviceCollection.BuildServiceProvider();
 
+            serviceCollection.AddCommandQuery(typeof(CanGetAHandlerTest).Assembly);
+
+            var provider = serviceCollection.BuildServiceProvider();
             var broker = provider.GetService<IBroker>();
             var result = await broker.HandleAsync<TestHandlerMessage, CommandResponse<string>>(new TestHandlerMessage());
 
@@ -22,11 +23,13 @@ namespace CommandTests.HandlerTests
         }
     }
 
-    public class TestHandlerMessage : IMessage
+    public class TestHandlerMessage
+        : IMessage
     {
-
     }
-    public class TestHandler : IAsyncHandler<TestHandlerMessage, CommandResponse<string>>
+
+    public class TestHandler
+        : IAsyncHandler<TestHandlerMessage, CommandResponse<string>>
     {
         public async Task<CommandResponse<string>> Execute(TestHandlerMessage message)
         {

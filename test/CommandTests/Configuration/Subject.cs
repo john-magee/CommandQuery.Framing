@@ -1,11 +1,12 @@
-﻿using System;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using Fixie;
+using System;
 
 namespace CommandTests.Configuration
 {
-    public abstract class Subject<TClassUnderTest> : ISubjectBase
+    public abstract class Subject<TClassUnderTest>
+        : ISubjectBase
         where TClassUnderTest : class
     {
         protected IFixture _fixture;
@@ -14,7 +15,7 @@ namespace CommandTests.Configuration
 
         protected TClassUnderTest Sut
         {
-            get { return _sut ?? (_sut = new Lazy<TClassUnderTest>(() => _fixture.Create<TClassUnderTest>()).Value); }
+            get { return _sut ??= new Lazy<TClassUnderTest>(() => _fixture.Create<TClassUnderTest>()).Value; }
         }
 
         protected Subject()
@@ -27,7 +28,6 @@ namespace CommandTests.Configuration
 
         public virtual void FixtureSetup()
         {
-
         }
 
         public virtual void FixtureTearDown()
@@ -37,15 +37,12 @@ namespace CommandTests.Configuration
 
         protected void Register<TInterface>(TInterface concreteType)
         {
-            _fixture.Register<TInterface>(() => concreteType);
+            _fixture.Register(() => concreteType);
         }
 
         protected T MockType<T>()
         {
             return _fixture.Create<T>();
         }
-    
     }
-
-
 }

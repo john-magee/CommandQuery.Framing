@@ -6,16 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CommandQueryApiSample.Controllers
 {
-
     [ApiController]
-    public class WidgetController : ControllerBase
+    public class WidgetController(IBroker commandBroker)
+        : ControllerBase
     {
-        private readonly IBroker _commandBroker;
-
-        public WidgetController(IBroker commandBroker)
-        {
-            _commandBroker = commandBroker;
-        }
+        private readonly IBroker _commandBroker = commandBroker;
 
         [Route("widget")]
         [HttpPost]

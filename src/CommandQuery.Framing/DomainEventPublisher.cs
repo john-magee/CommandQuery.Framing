@@ -1,20 +1,16 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommandQuery.Framing
 {
-    public class DomainEventPublisher : IDomainEventPublisher
+    public class DomainEventPublisher(IServiceProvider serviceProvider)
+        : IDomainEventPublisher
     {
         public event EventHandler MessageSent;
         public event EventHandler<DomainEventArgs> MessageResult;
 
-        private readonly IServiceProvider _serviceProvider;
-
-        public DomainEventPublisher(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
 
         public async Task Publish<TMessageType>(TMessageType message)
         {
@@ -24,6 +20,7 @@ namespace CommandQuery.Framing
             {
                 domainEvent.OnComplete += DomainEvent_OnComplete;
                 MessageSent?.Invoke(this, new DomainEventArgs());
+
                 await domainEvent.Execute(message);
             }
         }

@@ -6,20 +6,18 @@ using System.Reflection;
 namespace CommandQuery.Framing
 {
     /// <summary>
-    /// assembly convention scanner
+    /// Assembly convention scanner.
     /// </summary>
     internal class AssemblyConventionScanner
     {
-        private Assembly[] _assemblies;
-
-
         private static Lazy<AssemblyConventionScanner> _instance = new Lazy<AssemblyConventionScanner>(() => new AssemblyConventionScanner());
-        private Type[] _types;
-        private Action<Type> _action;
 
+        private Assembly[] _assemblies;
+        private Action<Type> _action;
+        private Type[] _types;
 
         /// <summary>
-        /// Assemblieses the specified assemblies.
+        /// Assembles the specified assemblies.
         /// </summary>
         /// <param name="assemblies">The assemblies.</param>
         /// <returns></returns>
@@ -31,13 +29,14 @@ namespace CommandQuery.Framing
         }
 
         /// <summary>
-        /// Matcheses the specified types.
+        /// Matches the specified types.
         /// </summary>
         /// <param name="types">The types.</param>
         /// <returns></returns>
         public AssemblyConventionScanner Matches(Type[] types)
         {
             _types = types;
+
             return this;
         }
 
@@ -53,7 +52,6 @@ namespace CommandQuery.Framing
             return this;
         }
 
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
@@ -61,25 +59,16 @@ namespace CommandQuery.Framing
         {
             foreach (var assembly in _assemblies)
             {
-
-
                 var foundTypes = new List<Type>();
-
 
                 if (_types != null)
                 {
                     foreach (var type in _types)
                     {
-
-                        foundTypes.AddRange(assembly.GetTypes().Where(x =>
-                            !IntrospectionExtensions.GetTypeInfo(x).IsAbstract
-                            && CanBeCastTo(x, type)));
-
-
+                        foundTypes.AddRange(assembly.GetTypes().Where(x => !IntrospectionExtensions.GetTypeInfo(x).IsAbstract && CanBeCastTo(x, type)));
                     }
-
                 }
-                else //scan for all types
+                else // Scan for all types.
                 {
                     var badNames = new[] { "System", "Microsoft" };
 
@@ -95,14 +84,18 @@ namespace CommandQuery.Framing
 
         private static bool CanBeCastTo(Type type, Type destinationType)
         {
-            if (type == (Type)null)
+            if (type == null)
+            {
                 return false;
+            }
+
             if (type == destinationType)
+            {
                 return true;
+            }
 
             if (destinationType.GetTypeInfo().IsGenericType && !destinationType.GenericTypeArguments.Any())
             {
-
                 if (destinationType.GetTypeInfo().IsInterface && !type.GetTypeInfo().IsInterface)
                 {
                     return type.GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == destinationType);
@@ -114,6 +107,7 @@ namespace CommandQuery.Framing
 
             return t1 & t2;
         }
+
         /// <summary>
         /// Finalizes an instance of the <see cref="AssemblyConventionScanner"/> class.
         /// </summary>

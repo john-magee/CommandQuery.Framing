@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommandQuery.Framing
 {
     /// <summary>
-    /// type extensions
+    /// Type extensions
     /// </summary>
     internal static class TypeExtensions
     {
@@ -24,17 +24,17 @@ namespace CommandQuery.Framing
                 .Do(foundInterface =>
                 {
                     var implInterface = foundInterface.GetTypeInfo().ImplementedInterfaces.ToList();
+
                     implInterface.Add(foundInterface);
 
                     foreach (var type in implInterface)
                     {
                         serviceCollection.AddTransient(type, foundInterface);
                     }
-
-                }).Execute();
+                })
+                .Execute();
 
             return serviceCollection;
         }
-
     }
 }

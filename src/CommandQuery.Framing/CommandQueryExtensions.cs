@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommandQuery.Framing
 {
@@ -8,17 +7,15 @@ namespace CommandQuery.Framing
     {
         public static IServiceCollection AddCommandQuery(this IServiceCollection serviceCollection, params Assembly[] handlers)
         {
-
             serviceCollection.AddSingleton<IBroker, Broker>();
             serviceCollection.AddSingleton<IDomainEventPublisher, DomainEventPublisher>();
 
             serviceCollection.ScanAndAddTransientTypes(handlers,
-                                                       new Type[]
-                                                       {
-                                                           typeof(IAsyncHandler<,>),
-                                                           typeof(IHandler<,>),
-                                                           typeof(IDomainEvent<>)
-                                                       });
+                [
+                    typeof(IAsyncHandler<,>),
+                    typeof(IHandler<,>),
+                    typeof(IDomainEvent<>)
+                ]);
 
             return serviceCollection;
         }
