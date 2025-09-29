@@ -5,31 +5,20 @@ using CommandQueryApiSample.Domain.Requests;
 namespace CommandQueryApiSample.Domain.Commands;
 
 //v1
-public class CreateWidget : IAsyncHandler<CreateWidgetMessage, CommandResponse<string>>
+public class CreateWidget(IDomainEventPublisher publisher)
+    : IAsyncHandler<CreateWidgetMessage, CommandResponse<string>>
 {
-    private readonly IDomainEventPublisher _publisher;
-
-    public CreateWidget(IDomainEventPublisher publisher)
-    {
-        _publisher = publisher;
-    }
-
-    public async Task<CommandResponse<string>> Execute(CreateWidgetMessage message,
-        CancellationToken cancellationToken = default)
+    public async Task<CommandResponse<string>> Execute(CreateWidgetMessage message, CancellationToken cancellationToken = default)
     {
         var response = Guid.NewGuid().ToString();
 
-        _publisher.MessageResult += (sender, eventargs) =>
+        publisher.MessageResult += (sender, eventargs) =>
         {
             response += $"Name: {message.Name} message was sent and processed with Success={eventargs.Success}";
         };
 
-        await _publisher.Publish(new WidgetCreated{Name = message.Name}, cancellationToken);
+        await publisher.Publish(new WidgetCreated{Name = message.Name}, cancellationToken);
 
         return Response.Ok(response);
     }
-}
-
-public class V2
-{
 }

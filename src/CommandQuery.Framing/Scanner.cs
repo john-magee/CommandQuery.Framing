@@ -1,58 +1,57 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+internal class Scanner
 {
+    private readonly List<Assembly> _asm = [];
+    private readonly List<Type> _doNotInclude = [];
 
-    internal class Scanner
+    public Scanner ScanAssemblyWithType<T>()
     {
-        private readonly List<Assembly> _asm = new List<Assembly>();
-        private readonly List<Type> _doNotInclude = new List<Type>();
+        _asm.Add(typeof(T).Assembly);
 
-        public Scanner ScanAssemblyWithType<T>()
+        return this;
+    }
+
+    public Scanner DoNotIncludeType<T>()
+    {
+        _doNotInclude.Add(typeof(T));
+
+        return this;
+    }
+
+    public void Scan(IServiceCollection serviceCollection)
+    {
+        var loggerFactory = LoggerFactory.Create(builder =>
         {
-            _asm.Add(typeof(T).Assembly);
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
 
-            return this;
-        }
+        var logger = loggerFactory.CreateLogger<AssemblyConventionScanner>();
 
-        public Scanner DoNotIncludeType<T>()
-        {
-            _doNotInclude.Add(typeof(T));
+        new AssemblyConventionScanner(logger)
+            .Assemblies([.. _asm])
+            .Do(foundInterface =>
+                {
+                    var implInterface = foundInterface.GetTypeInfo().ImplementedInterfaces.ToList();
 
-            return this;
-        }
-        public void Scan(IServiceCollection serviceCollection)
-        {
-            var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-                builder.SetMinimumLevel(LogLevel.Information);
-            });
+                    implInterface.Add(foundInterface);
 
-            var logger = loggerFactory.CreateLogger<AssemblyConventionScanner>();
-
-            new AssemblyConventionScanner(logger)
-                .Assemblies(_asm.ToArray())
-                .Do(foundInterface =>
+                    if (_doNotInclude.Count != 0 && !implInterface.Any(x => _doNotInclude.Any(i => i == x)))
                     {
-                        var implInterface = foundInterface.GetTypeInfo().ImplementedInterfaces.ToList();
-                        implInterface.Add(foundInterface);
-
-                        if (_doNotInclude.Any() && !implInterface.Any(x => _doNotInclude.Any(i => i == x)))
+                        foreach (var type in implInterface)
                         {
-                            foreach (var type in implInterface)
-                            {
-                                serviceCollection.AddTransient(type, foundInterface);
-                            }
-
+                            serviceCollection.AddTransient(type, foundInterface);
                         }
-                    })
-                .Execute();
-        }
+                    }
+                })
+            .Execute();
     }
 }

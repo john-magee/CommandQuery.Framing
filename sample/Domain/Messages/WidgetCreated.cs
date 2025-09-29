@@ -1,7 +1,6 @@
-﻿namespace CommandQueryApiSample.Domain.Messages
+﻿namespace CommandQueryApiSample.Domain.Messages;
+
+public class WidgetCreated
 {
-    public class WidgetCreated
-    {
-        public string Name { get; set; } = string.Empty;
-    }
+    public string Name { get; set; } = string.Empty;
 }

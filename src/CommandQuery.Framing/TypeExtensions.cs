@@ -4,53 +4,47 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+/// <summary>
+/// Type extensions
+/// </summary>
+internal static class TypeExtensions
 {
     /// <summary>
-    /// type extensions
+    /// Scans the and add transient types.
     /// </summary>
-    internal static class TypeExtensions
+    /// <param name="serviceCollection">The service collection.</param>
+    /// <param name="assemblies">The assemblies.</param>
+    /// <param name="types">The types.</param>
+    public static IServiceCollection ScanAndAddTransientTypes(this IServiceCollection serviceCollection, Assembly[] assemblies, Type[] types)
     {
-        /// <summary>
-        /// Scans the and add transient types.
-        /// </summary>
-        /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="assemblies">The assemblies.</param>
-        /// <param name="types">The types.</param>
-        public static IServiceCollection ScanAndAddTransientTypes(
-            this IServiceCollection serviceCollection,
-            Assembly[] assemblies,
-            Type[] types)
+        var loggerFactory = LoggerFactory.Create(builder =>
         {
-            var loggerFactory = LoggerFactory.Create(builder =>
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
+        var logger = loggerFactory.CreateLogger<AssemblyConventionScanner>();
+
+        new AssemblyConventionScanner(logger)
+            .Assemblies(assemblies)
+            .Matches(types)
+            .Do(implementationType =>
             {
-                builder.AddConsole();
-                builder.SetMinimumLevel(LogLevel.Information);
-            });
+                var serviceTypes = implementationType.GetTypeInfo()
+                    .ImplementedInterfaces
+                    .ToList();
 
-            var logger = loggerFactory.CreateLogger<AssemblyConventionScanner>();
+                // Optionally add the type itself
+                serviceTypes.Add(implementationType);
 
-            new AssemblyConventionScanner(logger)
-                .Assemblies(assemblies)
-                .Matches(types)
-                .Do(implementationType =>
+                foreach (var serviceType in serviceTypes.Distinct())
                 {
-                    var serviceTypes = implementationType.GetTypeInfo()
-                        .ImplementedInterfaces
-                        .ToList();
+                    serviceCollection.AddTransient(serviceType, implementationType);
+                }
+            })
+            .Execute();
 
-                    // Optionally add the type itself
-                    serviceTypes.Add(implementationType);
-
-                    foreach (var serviceType in serviceTypes.Distinct())
-                    {
-                        serviceCollection.AddTransient(serviceType, implementationType);
-                    }
-                })
-                .Execute();
-
-            return serviceCollection;
-        }
-
+        return serviceCollection;
     }
 }

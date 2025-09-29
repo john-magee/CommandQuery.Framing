@@ -4,44 +4,34 @@ using CommandQueryApiSample.Domain.Models;
 using CommandQueryApiSample.Domain.Requests;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CommandQueryApiSample.Controllers
+namespace CommandQueryApiSample.Controllers;
+
+[ApiController]
+public class WidgetController(IBroker commandBroker) : ControllerBase
 {
-
-    [ApiController]
-    public class WidgetController : ControllerBase
+    [Route("widget")]
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] CreateWidgetMessage request)
     {
-        private readonly IBroker _commandBroker;
+        // Create new cancellation token.
+        var cancellationToken = new CancellationTokenSource().Token;
+        var response = await commandBroker.HandleAsync<CreateWidgetMessage, CommandResponse<string>>(request, cancellationToken);
 
-        public WidgetController(IBroker commandBroker)
+        if (response.Success)
         {
-            _commandBroker = commandBroker;
+            return Ok(response.Data);
         }
 
-        [Route("widget")]
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateWidgetMessage request)
-        {
+        return BadRequest(response.Message);
+    }
 
-            // create new cancellation token
-            var cancellationToken = new CancellationTokenSource().Token;
+    [Route("widget/{id}")]
+    [HttpGet]
+    public async Task<IActionResult> Get(string id)
+    {
+        // Create new cancellation token.
+        var cancellationToken = new CancellationTokenSource().Token;
 
-            var response = await _commandBroker.HandleAsync<CreateWidgetMessage, CommandResponse<string>>(request, cancellationToken);
-
-            if (response.Success)
-            {
-                return Ok(response.Data);
-            }
-
-            return BadRequest(response.Message);
-        }
-
-        [Route("widget/{id}")]
-        [HttpGet]
-        public async Task<IActionResult> Get(string id)
-        {
-            // create new cancellation token
-            var cancellationToken = new CancellationTokenSource().Token;
-            return Ok(await _commandBroker.HandleAsync<GetWidget, Widget>(new GetWidget { Id = id }, cancellationToken));
-        }
+        return Ok(await commandBroker.HandleAsync<GetWidget, Widget>(new GetWidget { Id = id }, cancellationToken));
     }
 }

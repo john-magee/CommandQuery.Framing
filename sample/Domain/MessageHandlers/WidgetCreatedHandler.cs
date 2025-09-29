@@ -1,19 +1,21 @@
 ﻿using CommandQuery.Framing;
 using CommandQueryApiSample.Domain.Messages;
 
-namespace CommandQueryApiSample.Domain.MessageHandlers
+namespace CommandQueryApiSample.Domain.MessageHandlers;
+
+public class WidgetCreatedHandler
+    : IDomainEvent<WidgetCreated>
 {
-    public class WidgetCreatedHandler:IDomainEvent<WidgetCreated>
+    public event EventHandler<DomainEventArgs>? OnComplete;
+
+    public async Task Execute(WidgetCreated message)
     {
-        public event EventHandler<DomainEventArgs>? OnComplete;
-        public async Task Execute(WidgetCreated message)
+        OnComplete?.Invoke(this, new DomainEventArgs
         {
-            OnComplete?.Invoke(this,new DomainEventArgs
-                                    {
-                                        Message = "worked",
-                                        Success = true
-                                    });
-            await Task.CompletedTask;
-        }
+            Message = "worked",
+            Success = true
+        });
+
+        await Task.CompletedTask;
     }
 }

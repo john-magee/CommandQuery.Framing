@@ -1,37 +1,26 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+public class Broker(IServiceProvider serviceProvider)
+    : IBroker
 {
-
-    public class Broker : IBroker
+    public TResponse Handle<TRequest, TResponse>(TRequest message) where TRequest : IMessage
     {
-        private readonly IServiceProvider _serviceProvider;
+        var messageHandler = serviceProvider.GetService<IHandler<TRequest, TResponse>>();
+        var result = messageHandler.Execute(message);
 
-        public Broker(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        return result;
+    }
 
+    public async Task<TResponse> HandleAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken) where TRequest : IMessage
+    {
+        var messageHandler = serviceProvider.GetService<IAsyncHandler<TRequest, TResponse>>();
+        var result = await messageHandler.Execute(message, cancellationToken);
 
-        public TResponse Handle<TRequest, TResponse>(TRequest message) where TRequest : IMessage
-        {
-            var messageHandler = _serviceProvider.GetService<IHandler<TRequest, TResponse>>();
-
-            var result = messageHandler.Execute(message);
-
-            return result;
-        }
-
-        public async Task<TResponse> HandleAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default) where TRequest : IMessage
-        {
-            var messageHandler = _serviceProvider.GetService<IAsyncHandler<TRequest, TResponse>>();
-
-            var result = await messageHandler.Execute(message, cancellationToken);
-
-            return result;
-        }
+        return result;
     }
 }

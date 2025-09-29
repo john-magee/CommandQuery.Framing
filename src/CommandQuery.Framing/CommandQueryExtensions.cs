@@ -1,26 +1,22 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+public static class CommandQueryExtensions
 {
-    public static class CommandQueryExtensions
+    public static IServiceCollection AddCommandQuery(this IServiceCollection serviceCollection, params Assembly[] handlers)
     {
-        public static IServiceCollection AddCommandQuery(this IServiceCollection serviceCollection, params Assembly[] handlers)
-        {
+        serviceCollection.AddSingleton<IBroker, Broker>();
+        serviceCollection.AddSingleton<IDomainEventPublisher, DomainEventPublisher>();
 
-            serviceCollection.AddSingleton<IBroker, Broker>();
-            serviceCollection.AddSingleton<IDomainEventPublisher, DomainEventPublisher>();
+        serviceCollection.ScanAndAddTransientTypes(handlers,
+                                                   [
+                                                       typeof(IAsyncHandler<,>),
+                                                       typeof(IHandler<,>),
+                                                       typeof(IDomainEvent<>)
+                                                   ]);
 
-            serviceCollection.ScanAndAddTransientTypes(handlers,
-                                                       new Type[]
-                                                       {
-                                                           typeof(IAsyncHandler<,>),
-                                                           typeof(IHandler<,>),
-                                                           typeof(IDomainEvent<>)
-                                                       });
-
-            return serviceCollection;
-        }
+        return serviceCollection;
     }
 }

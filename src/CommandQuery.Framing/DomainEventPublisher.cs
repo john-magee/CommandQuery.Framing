@@ -1,37 +1,32 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+public class DomainEventPublisher(IServiceProvider serviceProvider)
+    : IDomainEventPublisher
 {
-    public class DomainEventPublisher : IDomainEventPublisher
+    public event EventHandler MessageSent;
+    public event EventHandler<DomainEventArgs> MessageResult;
+
+    public async Task Publish<TMessageType>(TMessageType message, CancellationToken cancellationToken = default)
     {
-        public event EventHandler MessageSent;
-        public event EventHandler<DomainEventArgs> MessageResult;
+        var events = serviceProvider.GetServices<IDomainEvent<TMessageType>>();
 
-        private readonly IServiceProvider _serviceProvider;
-
-        public DomainEventPublisher(IServiceProvider serviceProvider)
+        foreach (var domainEvent in events)
         {
-            _serviceProvider = serviceProvider;
-        }
+            domainEvent.OnComplete += DomainEvent_OnComplete;
+            
+            MessageSent?.Invoke(this, new DomainEventArgs());
 
-        public async Task Publish<TMessageType>(TMessageType message, CancellationToken cancellationToken = default)
-        {
-            var events = _serviceProvider.GetServices<IDomainEvent<TMessageType>>();
-
-            foreach (var domainEvent in events)
-            {
-                domainEvent.OnComplete += DomainEvent_OnComplete;
-                MessageSent?.Invoke(this, new DomainEventArgs());
-                await domainEvent.Execute(message);
-            }
+            await domainEvent.Execute(message);
         }
+    }
 
-        private void DomainEvent_OnComplete(object sender, DomainEventArgs e)
-        {
-            MessageResult?.Invoke(this, e);
-        }
+    private void DomainEvent_OnComplete(object sender, DomainEventArgs e)
+    {
+        MessageResult?.Invoke(this, e);
     }
 }

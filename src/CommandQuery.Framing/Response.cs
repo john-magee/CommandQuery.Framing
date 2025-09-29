@@ -1,29 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CommandQuery.Framing
+namespace CommandQuery.Framing;
+
+public static class Response
 {
-    public static class Response
+    public static CommandResponse<T> Failed<T>(List<string> errorMessages, Exception exception = null)
     {
-        public static CommandResponse<T> Failed<T>(List<string> errorMessages, Exception exception = null)
+        return new CommandResponse<T>
         {
-            return new CommandResponse<T>
-                   {
-                       Success = false,
-                       Message = string.Join(" ", errorMessages),
-                       Exception = exception
-                   };
-        }
+            Success = false,
+            Message = string.Join(" ", errorMessages),
+            Exception = exception
+        };
+    }
 
-        public static CommandResponse<T> Ok<T>(T data)
+    public static CommandResponse<T> Ok<T>(T data)
+    {
+        return new CommandResponse<T>
         {
-            return new CommandResponse<T>
-                   {
-                       Success = true,
-                       Data = data
-                   };
-        }
-
-
+            Success = true,
+            Data = data
+        };
     }
 }

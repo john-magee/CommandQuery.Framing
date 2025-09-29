@@ -1,9 +1,9 @@
 ﻿using CommandQuery.Framing;
 
-namespace CommandQueryApiSample.Domain.Messages
+namespace CommandQueryApiSample.Domain.Messages;
+
+public class GetWidget
+    : IMessage
 {
-    public class GetWidget:IMessage
-    {
-        public string Id { get; set; } = string.Empty;
-    }
+    public string Id { get; set; } = string.Empty;
 }

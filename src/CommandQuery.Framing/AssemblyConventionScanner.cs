@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
-
 
 namespace CommandQuery.Framing;
 
@@ -11,33 +10,31 @@ namespace CommandQuery.Framing;
 ///     assembly convention scanner
 /// </summary>
 
-internal class AssemblyConventionScanner
+internal class AssemblyConventionScanner(ILogger<AssemblyConventionScanner> logger)
 {
     private Assembly[] _assemblies;
     private Type[] _types;
     private Action<Type> _action;
-    private readonly ILogger<AssemblyConventionScanner> _logger;
-
-    public AssemblyConventionScanner(ILogger<AssemblyConventionScanner> logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly ILogger<AssemblyConventionScanner> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public AssemblyConventionScanner Assemblies(params Assembly[] assemblies)
     {
         _assemblies = assemblies ?? throw new ArgumentNullException(nameof(assemblies));
+
         return this;
     }
 
     public AssemblyConventionScanner Matches(params Type[] types)
     {
         _types = types;
+
         return this;
     }
 
     public AssemblyConventionScanner Do(Action<Type> action)
     {
         _action = action ?? throw new ArgumentNullException(nameof(action));
+
         return this;
     }
 
@@ -55,8 +52,7 @@ internal class AssemblyConventionScanner
             {
                 assemblyTypes = ex.Types.Where(t => t != null).ToArray();
 
-                _logger.LogWarning("ReflectionTypeLoadException occurred for assembly {AssemblyName}. Partial types loaded.",
-                    assembly.FullName);
+                _logger.LogWarning("ReflectionTypeLoadException occurred for assembly {AssemblyName}. Partial types loaded.", assembly.FullName);
 
                 foreach (var loaderException in ex.LoaderExceptions)
                 {
@@ -66,6 +62,7 @@ internal class AssemblyConventionScanner
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error occurred while loading types from assembly {AssemblyName}", assembly.FullName);
+
                 continue;
             }
 
@@ -75,20 +72,17 @@ internal class AssemblyConventionScanner
             {
                 foreach (var targetType in _types)
                 {
-                    foundTypes.AddRange(assemblyTypes.Where(x =>
-                        !x.GetTypeInfo().IsAbstract &&
-                        CanBeCastTo(x, targetType)));
+                    foundTypes.AddRange(assemblyTypes.Where(x => !x.GetTypeInfo().IsAbstract && CanBeCastTo(x, targetType)));
                 }
             }
             else
             {
                 var badPrefixes = new[] { "System", "Microsoft" };
 
-                foundTypes.AddRange(assemblyTypes.Where(x =>
-                    !x.GetTypeInfo().IsAbstract &&
-                    !x.GetTypeInfo().IsInterface &&
-                    !string.IsNullOrWhiteSpace(x.Namespace) &&
-                    !badPrefixes.Any(b => x.Namespace.StartsWith(b))));
+                foundTypes.AddRange(assemblyTypes.Where(x => !x.GetTypeInfo().IsAbstract
+                    && !x.GetTypeInfo().IsInterface
+                    && !string.IsNullOrWhiteSpace(x.Namespace)
+                    && !badPrefixes.Any(b => x.Namespace.StartsWith(b))));
             }
 
             foreach (var foundType in foundTypes.Distinct())
@@ -108,10 +102,14 @@ internal class AssemblyConventionScanner
     private static bool CanBeCastTo(Type type, Type destinationType)
     {
         if (type == null || destinationType == null)
+        {
             return false;
+        }
 
         if (type == destinationType)
+        {
             return true;
+        }
 
         var destInfo = destinationType.GetTypeInfo();
         var typeInfo = type.GetTypeInfo();
@@ -120,13 +118,10 @@ internal class AssemblyConventionScanner
         {
             if (destInfo.IsInterface && !typeInfo.IsInterface)
             {
-                return type.GetInterfaces().Any(x =>
-                    x.GetTypeInfo().IsGenericType &&
-                    x.GetGenericTypeDefinition() == destinationType);
+                return type.GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == destinationType);
             }
         }
 
-        return destinationType.IsAssignableFrom(type) ||
-               type.GetInterfaces().Any(x => x.IsAssignableFrom(destinationType));
+        return destinationType.IsAssignableFrom(type) || type.GetInterfaces().Any(x => x.IsAssignableFrom(destinationType));
     }
 }

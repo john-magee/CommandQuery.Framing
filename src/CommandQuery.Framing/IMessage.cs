@@ -1,8 +1,5 @@
-﻿
-namespace CommandQuery.Framing
-{
-    public interface IMessage
-    {
+﻿namespace CommandQuery.Framing;
 
-    }
+public interface IMessage
+{
 }
